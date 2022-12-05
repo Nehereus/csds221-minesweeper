@@ -22,7 +22,7 @@
                                 <tr>
                                     <td class="menu" colspan="${size}">
                                         <section id="status-bar">
-                                            <div id="bomb-counter">{{ minesCount1.toString() + minesCount0.toString() }}
+                                            <div id="bomb-counter">{{minesCount0.toString() }}
                                             </div>
                                             <div v-if="(!isDoomed && !isWin && !shockingTimer)" id="reset"><img
                                                     @click="reRenderGrid" src="../public/img/smiley-face.png"></div>
@@ -35,7 +35,8 @@
                                             <div v-else-if="(!!shockingTimer)" id="reset" style="border: none"><img
                                                     @click="reRenderGrid" src="../public/img/o-face.png" width="100%"
                                                     height="100%"></div>
-                                            <div id="timer">{{ timer2.toString() + timer1.toString() + timer0.toString() }}
+                                            <div id="timer">{{ timer2.toString() + timer1.toString() + timer0.toString()
+                                            }}
                                             </div>
                                         </section>
                                     </td>
@@ -45,7 +46,7 @@
                                         :style="{ 'grid-template-columns': 'repeat(' + rowNumber + ', 0fr)' }">
                                         <cell v-if="refresh" v-for=" (col, j) in grid[i]" :key="j" :ref="grid[i][j].id"
                                             @doomed="handleDoomed" @revealSurroundings="revealHandler(i, j, true)"
-                                            @shocked="revealHandler(i, j, false)" @flag="flagHandler"
+                                            @shocked="revealHandler(i, j, false)" @flag="flagHandler(-1)" @unflag="flagHandler(1)"
                                             :val="grid[i][j].val">
                                         </cell>
                                     </div>
@@ -125,7 +126,8 @@
                                 <b>right-click</b> to put
                                 a flag it on it as a reminder. Once you have flagged all the bombs around an open cell,
                                 you
-                                can quickly open the remaining non-bomb cells by <b>right clicking</b> on the cell.</p>
+                                can quickly open the remaining non-bomb cells by <b>right clicking</b> on the cell.
+                            </p>
 
                             <p>you can set the size of the map and the frequency of mines by using the radio buttons on
                                 the right side</p>
@@ -165,8 +167,8 @@ export default {
                 this.timer0 += 1;
             }
         },
-        flagHandler() {
-            this.minesCountController(-1);
+        flagHandler(val) {
+            this.minesCountController(val);
             this.winConditionChecker();
         },
         winConditionChecker() {
@@ -206,19 +208,24 @@ export default {
 
         },
         minesCountController(val) {
-            if (this.minesCount0 + val > 9) {
-                this.minesCount1 += 1;
-                this.minesCount0 = this.minesCount0 + val - 10;
-            } else if (this.minesCount0 + val < 0) {
-                this.minesCount1 -= 1;
-                this.minesCount0 = this.minesCount0 - val + 10;
-            } else {
-                this.minesCount0 += val;
-            }
+            this.minesCount0+=val;
         },
 
         flipSurroundingEmpty(col, row, activeMode) {
-
+            let flagCount = 0
+            for (let a = -1; a < 2; a++) {
+                for (let b = -1; b < 2; b++) {
+                    if (this.grid[col + a] != null && this.grid[row + b] != null && (a != 0 || b != 0) &&
+                            this.$refs[this.grid[col + a][row + b].id][0].notRevealed === true
+                        ) {
+                            
+                    flagCount += this.$refs[this.grid[col + a][row + b].id][0].isFlaged ? 1 : 0;
+                        }
+                }
+            }
+            console.log(flagCount);
+            
+           
             if (col > -1 && row > -1 && col < this.rowNumber && row < this.rowNumber) {
                 for (let a = -1; a < 2; a++) {
                     for (let b = -1; b < 2; b++) {
@@ -231,7 +238,7 @@ export default {
                                     this.$refs[this.grid[col + a][row + b].id][0].notRevealed = false;
                                 if (this.grid[col + a][row + b].val === 0)
                                     this.flipSurroundingEmpty(col + a, row + b, activeMode);
-                            } else {
+                            } else if(flagCount===this.grid[col][row].val) {
                                 if (this.grid[col + a][row + b].val !== true && this.grid[col + a][row + b].val >= 0 && this.$refs[this.grid[col + a][row + b].id][0].isFlaged === false)
                                     this.$refs[this.grid[col + a][row + b].id][0].notRevealed = false;
                                 if (this.$refs[this.grid[col + a][row + b].id][0].isFlaged === true && this.grid[col + a][row + b].val === true && this.$refs[this.grid[col + a][row + b].id][0].notRevealed === true) {
@@ -240,6 +247,7 @@ export default {
                                     this.$refs[this.grid[col + a][row + b].id][0].isFalsePositive = true;
                                     this.handleDoomed();
                                 }
+
 
 
                             }
@@ -347,7 +355,6 @@ export default {
         timer0: {
             handler(value) {
                 if (this.timerEnabled) {
-                    console.log("fds");
                     setTimeout(() => {
                         this.timerController();
                     }, 1000);

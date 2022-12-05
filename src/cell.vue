@@ -35,6 +35,7 @@ export default {
         unflag(e){
             e.preventDefault();
             this.isFlaged=false; 
+            this.$emit("unflag");
         },
         revealSurroundings(e){
             e.preventDefault();

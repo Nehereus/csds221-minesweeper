@@ -5,6 +5,7 @@ const path = require('path');
 module.exports = {
   outputDir: path.resolve(__dirname, '../server/public'),
   lintOnSave: false, //turn off lint
+  publicPath: '/csds221-minesweeper/',
   devServer: {
     proxy: {
       '/api': {
