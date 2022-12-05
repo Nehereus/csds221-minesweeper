@@ -1,14 +1,10 @@
 //imports
-    import toDo from './toDo.vue';
+    import minesweeper from './mineSweeper.vue';
 
 //define routes
     export default [{
-            path: '/toDo',
-            name: 'toDo',
-            component: toDo
-        },{
-            path: "*",
-            name: 'default',
-            redirect: "/toDo"
+            path: '*',
+            name: 'mineSweeper',
+            component: minesweeper
         }
     ];
