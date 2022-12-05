@@ -35,7 +35,8 @@
                                             <div v-else-if="(!!shockingTimer)" id="reset" style="border: none"><img
                                                     @click="reRenderGrid" src="../public/img/o-face.png" width="100%"
                                                     height="100%"></div>
-                                            <div id="timer">000</div>
+                                            <div id="timer">{{ timer2.toString() + timer1.toString() + timer0.toString() }}
+                                            </div>
                                         </section>
                                     </td>
                                 </tr>
@@ -114,19 +115,25 @@
                             </div>
                         </div>
                         <div class="window-body" style=" font-size: 18px">
-                        <p>The purpose of the game is to open all the cells of the board which do not contain a bomb.
-                            You lose if you set off a bomb cell.</p>
+                            <p>The purpose of the game is to open all the cells of the board which do not contain a
+                                bomb.
+                                You lose if you set off a bomb cell.</p>
 
-                            <p>Every non-bomb cell you open with left clicking will tell you the total number of bombs in the eight
-                            neighboring cells. Once you are sure that a cell contains a bomb, you can <b>right-click</b> to put
-                            a flag it on it as a reminder. Once you have flagged all the bombs around an open cell, you
-                            can quickly open the remaining non-bomb cells by  <b>right clicking</b> on the cell.</p>
+                            <p>Every non-bomb cell you open with left clicking will tell you the total number of bombs
+                                in the eight
+                                neighboring cells. Once you are sure that a cell contains a bomb, you can
+                                <b>right-click</b> to put
+                                a flag it on it as a reminder. Once you have flagged all the bombs around an open cell,
+                                you
+                                can quickly open the remaining non-bomb cells by <b>right clicking</b> on the cell.</p>
 
-                        <p>you can set the size of the map and the frequency of mines by using the radio buttons on the right side</p>
+                            <p>you can set the size of the map and the frequency of mines by using the radio buttons on
+                                the right side</p>
 
-                        <p>To start a new game (abandoning the current one), <b>just click on the yellow face button</b>.</p>
-                        <p>author: Nick Du yxd421@case.edu, MIT License, no right reserved</p>
-                        
+                            <p>To start a new game (abandoning the current one), <b>just click on the yellow face
+                                    button</b>.</p>
+                            <p>author: Nick Du yxd421@case.edu, MIT License, no right reserved</p>
+
                         </div>
                     </div>
                 </v-container>
@@ -144,6 +151,20 @@ export default {
         this.reRenderGrid();
     },
     methods: {
+        timerController() {
+            if (this.timer0 + 1 > 9) {
+                if (this.timer1 + 1 > 9) {
+                    this.timer2 += 1;
+                    this.timer1 = 0;
+                    this.timer0 = 0;
+                } else {
+                    this.timer1 += 1;
+                    this.timer0 = 0;
+                }
+            } else {
+                this.timer0 += 1;
+            }
+        },
         flagHandler() {
             this.minesCountController(-1);
             this.winConditionChecker();
@@ -162,6 +183,7 @@ export default {
             res = res || leftOnlyMine;
             if (res) {
                 this.isWin = true;
+                this.timerEnabled = false;
                 for (let i = 0; i < this.rowNumber; i++) {
                     for (let j = 0; j < this.rowNumber; j++) {
                         if (this.$refs[this.grid[i][j].id][0].isFlaged === false)
@@ -174,6 +196,11 @@ export default {
         }
         ,
         revealHandler(i, j, a) {
+            if (this.timerEnabled === false)
+                this.timerEnabled = true;
+
+
+
             this.shockingTimer = 5;
             this.flipSurroundingEmpty(i, j, a);
 
@@ -233,9 +260,14 @@ export default {
             this.minesCount0 = 0;
             this.minesCount1 = 0;
             this.isDoomed = true;
+            this.timerEnabled = false;
         },
         reRenderGrid() {
             this.grid = [];
+            this.timerEnabled = false;
+            this.timer0 = 0;
+            this.timer1 = 0;
+            this.timer2 = 0;
             this.minesCount0 = 0;
             this.minesCount1 = 0;
             for (let i = 0; i < this.rowNumber; i++) {
@@ -288,6 +320,9 @@ export default {
         return {
             minesCount0: 0,
             minesCount1: 0,
+            timer0: 0,
+            timer1: 0,
+            timer2: 0,
             mineFrequency: 0.1,
             rowNumber: 9,
             grid: [this.rowNumber],
@@ -295,11 +330,33 @@ export default {
             isWin: false,
             shockingTimer: 0,
             refresh: true,
+            timerEnabled: false,
 
         }
 
     },
+
     watch: {
+        timerEnabled(val) {
+            if (val) {
+                setTimeout(() => {
+                    this.timer0 = 1;
+                }, 1000);
+            }
+        },
+        timer0: {
+            handler(value) {
+                if (this.timerEnabled) {
+                    console.log("fds");
+                    setTimeout(() => {
+                        this.timerController();
+                    }, 1000);
+                }
+
+            },
+            immediate: true
+        }
+        ,
         shockingTimer: {
             handler(value) {
                 if (value > 0) {
